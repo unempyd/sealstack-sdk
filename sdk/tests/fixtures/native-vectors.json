@@ -1,0 +1,417 @@
+{
+  "description": "Conformance vectors for the SealStack offline verifier. Each case mutates the Section 12 golden bundle (receipt-v1.json, key 'bundle') and states the exit code SPEC-RECEIPT.md Section 10.3 requires: 0 VALID, 1 INVALID, 2 UNKNOWN. 'trust' is 'golden' (service-keys.json) or null (no trust file). Mutations are JSON-pointer assignments or a full replacement text. A case with \"resign\": true is re-signed after the mutation with the public test seeds (agent seed = bytes 0x00..0x1f, issuer seed = bytes 0x20..0x3f, SPEC-RECEIPT.md Section 12): the event hash and agent signature are recomputed, the receipt body's event_id/organisation_id/agent_id/agent_key_id/event_hash are rebound to the event, and the receipt is re-signed; the value \"$golden\" stands for a copy of the golden bundle. Such cases exercise rules that a signature failure would otherwise mask.",
+  "golden": "receipt-v1.json",
+  "trust_file": "service-keys.json",
+  "cases": [
+    {
+      "id": "valid-golden",
+      "spec": "10.3 step 13",
+      "mutation": {
+        "set": {}
+      },
+      "expect": {
+        "exit": 0,
+        "output": "Runtime chain:           NOT VERIFIED"
+      }
+    },
+    {
+      "id": "event-field-changed",
+      "spec": "10.3 step 7",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/metadata/source": "tampered"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "Event hash:              INVALID"
+      }
+    },
+    {
+      "id": "agent-signature-flipped",
+      "spec": "10.3 step 10",
+      "mutation": {
+        "set": {
+          "/event_envelope/signature": "m_ifXERnt9MnkduS1RKVBxTtXX4EcqfremBkeDipPqHzYu0vjRE3nDQ1rEvVuO8yTFhTJcCwbPxXN0q9qrjqAg"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "Agent signature:         INVALID"
+      }
+    },
+    {
+      "id": "service-signature-flipped",
+      "spec": "10.3 step 6",
+      "mutation": {
+        "set": {
+          "/service_receipt/signature": "tthOyW4G1c_sqIzM9V8TJ8UkflctDrDXfKM8x7BDyq3Hq9BXVJm9dpk50mflSGt8I--fU_OI31HzHKaiP-wfBQ"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "Service receipt:         INVALID"
+      }
+    },
+    {
+      "id": "agent-public-key-swapped",
+      "spec": "10.3 step 9",
+      "mutation": {
+        "set": {
+          "/agent_public_key": "Kay64UG8yvCyLhqU000LxzYeUm0L_hLIl5S8kyKWbdc"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "Agent key fingerprint:   INVALID"
+      }
+    },
+    {
+      "id": "service-key-metadata-swapped",
+      "spec": "10.3 step 5",
+      "mutation": {
+        "set": {
+          "/service_public_key_metadata/public_key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "does not match the trusted key"
+      }
+    },
+    {
+      "id": "bundle-extra-property",
+      "spec": "2 closed records, 10.3 step 3",
+      "mutation": {
+        "set": {
+          "/extra": 1
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "unexpected=['extra']"
+      }
+    },
+    {
+      "id": "limitations-text-altered",
+      "spec": "11, 10.3 step 3",
+      "mutation": {
+        "set": {
+          "/limitations": "This receipt verifies cryptographic relationships between the\nincluded data, registered keys and service receipt."
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "bundle.limitations"
+      }
+    },
+    {
+      "id": "receipt-schema-version-3",
+      "spec": "10.3 step 2",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/schema_version": 3
+        }
+      },
+      "expect": {
+        "exit": 2,
+        "output": "UNKNOWN"
+      }
+    },
+    {
+      "id": "bundle-schema-version-3",
+      "spec": "10.3 step 1",
+      "mutation": {
+        "set": {
+          "/schema_version": 3
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "schema_version must be the integer 2"
+      }
+    },
+    {
+      "id": "service-key-id-not-trusted",
+      "spec": "10.3 step 4",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/service_key_id": "other",
+          "/service_public_key_metadata/key_id": "other"
+        }
+      },
+      "expect": {
+        "exit": 2,
+        "output": "is not in the trust file"
+      }
+    },
+    {
+      "id": "no-trust-file",
+      "spec": "10.3 step 4",
+      "trust": null,
+      "mutation": {
+        "set": {}
+      },
+      "expect": {
+        "exit": 2,
+        "output": "no trusted-service-keys file"
+      }
+    },
+    {
+      "id": "duplicate-json-property",
+      "spec": "3, 10.3 step 1",
+      "mutation": {
+        "text": "{\"schema_version\":2,\"schema_version\":2}"
+      },
+      "expect": {
+        "exit": 1,
+        "output": "duplicate JSON property"
+      }
+    },
+    {
+      "id": "sequence-is-boolean",
+      "spec": "5 structural rules",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/sequence": true
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "sequence must be an integer"
+      }
+    },
+    {
+      "id": "timestamp-with-offset",
+      "spec": "2 Timestamp",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/occurred_at": "2026-01-02T03:04:05+00:00"
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "occurred_at is not a valid Timestamp"
+      }
+    },
+    {
+      "id": "metadata-integer-beyond-max-safe",
+      "spec": "3 value profile",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/metadata/n": 9007199254740992
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "integer out of range"
+      }
+    },
+    {
+      "id": "sponsor-null-but-root-fields-set",
+      "spec": "9 nullness rules",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/sponsor": null
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "null sponsor requires null sponsor root fields"
+      }
+    },
+    {
+      "id": "started-event-with-output-digest",
+      "spec": "5 structural rules",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/output_digest": {
+            "algorithm": "sha256",
+            "value": "sha256:97fcdad9fe31227a9ec60e519ff7635ac71941c55b77e585c908db1fa6406030",
+            "status": "available"
+          }
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "started events require null output and error"
+      }
+    },
+    {
+      "id": "predecessor-nested-twice",
+      "spec": "10.1 predecessor nesting",
+      "mutation": {
+        "set": {
+          "/predecessor": {
+            "schema_version": 2,
+            "event_envelope": {
+              "event": {},
+              "event_hash": "",
+              "signature": ""
+            },
+            "agent_public_key": "",
+            "service_receipt": {
+              "body": {},
+              "signature": ""
+            },
+            "service_public_key_metadata": {},
+            "limitations": "",
+            "predecessor": {}
+          }
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "predecessor"
+      }
+    },
+    {
+      "id": "metadata-float-1e400",
+      "spec": "3 numeric tokens",
+      "mutation": {
+        "text": "{\"schema_version\":2,\"x\":1e400}"
+      },
+      "expect": {
+        "exit": 1,
+        "output": "not strictly parsable"
+      }
+    },
+    {
+      "id": "metadata-nan-literal",
+      "spec": "3 unsupported constants",
+      "mutation": {
+        "text": "{\"schema_version\":2,\"x\":NaN}"
+      },
+      "expect": {
+        "exit": 1,
+        "output": "not strictly parsable"
+      }
+    },
+    {
+      "id": "metadata-negative-zero-changes-hash",
+      "spec": "3 negative zero canonicalises to 0, 10.3 step 7",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/metadata/z": -0.0
+        }
+      },
+      "expect": {
+        "exit": 1,
+        "output": "Event hash:              INVALID"
+      }
+    },
+    {
+      "id": "grant-does-not-cover-action-resigned",
+      "spec": "10.3 step 11",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/grant/capabilities": [
+            "invoice.read"
+          ],
+          "/service_receipt/body/capabilities_snapshot": [
+            "invoice.read"
+          ]
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "action_name is not a member of grant.capabilities"
+      }
+    },
+    {
+      "id": "grant-interval-outside-sponsor-resigned",
+      "spec": "10.3 step 11",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/grant/valid_from": "2025-12-31T00:00:00.000000Z"
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "grant interval is not within the sponsor interval"
+      }
+    },
+    {
+      "id": "capabilities-snapshot-order-resigned",
+      "spec": "9 ordered equality",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/capabilities_snapshot": [
+            "invoice.read",
+            "invoice.create"
+          ]
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "capabilities_snapshot does not equal grant.capabilities"
+      }
+    },
+    {
+      "id": "service-time-five-fraction-digits-resigned",
+      "spec": "2 ServiceTime",
+      "mutation": {
+        "set": {
+          "/service_receipt/body/received_at": "2026-01-02T03:04:05.00000Z"
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "received_at is not a ServiceTime"
+      }
+    },
+    {
+      "id": "predecessor-sequence-not-n-minus-1-resigned",
+      "spec": "10.3 step 12",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/sequence": 3,
+          "/event_envelope/event/previous_event_hash": "sha256:210dac98941ac0bbc38eab7f6dd8bbb5fd5cca6bf8da03a1c05892ef0e34a233",
+          "/predecessor": "$golden"
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "predecessor sequence is not N-1"
+      }
+    },
+    {
+      "id": "predecessor-hash-mismatch-resigned",
+      "spec": "10.3 step 12",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/sequence": 2,
+          "/event_envelope/event/previous_event_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "/predecessor": "$golden"
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 1,
+        "output": "predecessor hash does not equal previous_event_hash"
+      }
+    },
+    {
+      "id": "predecessor-link-valid-resigned",
+      "spec": "10.3 step 12-13",
+      "mutation": {
+        "set": {
+          "/event_envelope/event/sequence": 2,
+          "/event_envelope/event/event_id": "00000000-0000-4000-8000-000000000600",
+          "/event_envelope/event/previous_event_hash": "sha256:210dac98941ac0bbc38eab7f6dd8bbb5fd5cca6bf8da03a1c05892ef0e34a233",
+          "/predecessor": "$golden"
+        },
+        "resign": true
+      },
+      "expect": {
+        "exit": 0,
+        "output": "Runtime chain link: VALID"
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Compatibility
 
 What SealStack emits, which external receipt formats it can produce, how each
-export is built, and what was verified. Facts only. Version 0.1.3.
+export is built, and what was verified. Facts only. Version 0.1.4.
 
 ## Native format
 
@@ -29,7 +29,7 @@ reference: SPEC-RECEIPT.md.
 | --- | --- | --- | --- |
 | AERF, Agent Evidence Receipt Format | v0.1.0-draft.1 (tag `v0.1.0-draft.1` of github.com/aerf-spec/aerf) | `sealstack export --format aerf` | External: the AERF Go reference verifier built from the v0.1.0-draft.1 tag and from the repository main branch (v0.2.0-draft.1); full-mode artifact exits 0, a tampered copy exits 1. |
 | Agent Receipt Protocol | 0.5.0 (agentreceipts.ai, `@context` `https://agentreceipts.ai/context/v2`) | `sealstack export --format agent-receipts` | External: the `obsigna` Python package (its build on this machine reports protocol 0.6.0 and context v3; its `verify_raw` and `verify_receipt` accepted the 0.5.0 artifact and rejected a tampered copy). Internal: RFC 8785 bytes without `proof`, Ed25519, previous-hash recomputation. |
-| noa profile, draft-noa-scitt-ai-agent-receipt-01 | `noa.receipt/0.1`, bare receipt form | `sealstack export --format scitt` | Internal specification-derived test only (closed member set, enumerations, `chain.hash` recomputation, the 21-octet `NOA-Receipt-v0.1-sig:` prefix plus raw SHA-256 message, Ed25519, canonical base64). No external or reference verifier was run. |
+| noa profile, draft-noa-scitt-ai-agent-receipt-01 | `noa.receipt/0.1`, bare receipt form | `sealstack export --format scitt` | External: the noa project's independent Python verifier (`impl-py/noa_verify.py` in github.com/NordenSoft/noa-mandate-core, commit `025ee2cc25eea8e37c680af36561ce45ef2ca577`); a two-receipt full-mode chain exits VALID, a copy with one field changed after signing exits TAMPERED, and the subset artifact exits MALFORMED naming exactly its four omitted mandatory fields. Internal: closed member set, enumerations, `chain.hash` recomputation, the 21-octet `NOA-Receipt-v0.1-sig:` prefix plus raw SHA-256 message, Ed25519, canonical base64. |
 
 SealStack does not consume any of these formats. `sealstack verify` reads only
 the native bundle.
@@ -186,3 +186,13 @@ From 0.1.3 the SDK imports as `sealstack` and the command is `sealstack`; `produ
 remains a working alias for both, resolving to the same module objects. The SDK's
 logger is named `sealstack` (it was `product` before 0.1.3); a logging
 configuration that named the old logger must be updated to see the records.
+
+## Default base URL removed in 0.1.4
+
+Before 0.1.4 `AuditClient` fell back to `https://api.sealstack.com` when neither
+the `base_url` argument nor `SEALSTACK_API_URL` was set; that domain is not
+operated by this project, so a client configured with neither would have sent
+registration and event uploads, with the customer's API key in the
+`Authorization` header, to a third party. From 0.1.4 there is no default: the
+constructor raises `ValueError` naming both settings, before it creates a state
+directory, takes the directory lock or writes an identity.

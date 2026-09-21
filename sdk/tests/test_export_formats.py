@@ -9,9 +9,10 @@ What each format is checked against:
 * Agent Receipts: the obsigna reference verifier, run through
   ``$OBSIGNA_PYTHON`` (skipped when unset), plus an internal RFC 8785
   recomputation of the credential without its proof.
-* noa: an internal specification-derived verifier for the bare receipt form.
-  The draft names five verifiers but the available text gives no URL for any
-  of them, so no external implementation was run for this format.
+* noa: the noa project's independent Python verifier
+  (``impl-py/noa_verify.py`` in github.com/NordenSoft/noa-mandate-core), run
+  through the NOA_VERIFY environment variable (skipped when unset), plus an
+  internal specification-derived verifier for the bare receipt form.
 
 Self-contained apart from two read-only inputs the brief names: the golden
 bundle in ``sdk/tests/fixtures/receipt-v1.json`` and the public test seed in
@@ -291,6 +292,31 @@ def run_obsigna(artifact: Path, pem: Path) -> str:
     )
     assert result.returncode == 0, result.stderr
     return result.stdout.strip()
+
+
+def run_noa_verifier(receipts: Path, keyring: Path | None) -> tuple[int, str]:
+    """Run the noa project's zero-dependency Python verifier.
+
+    Exit codes there: 0 VALID, 1 UNVERIFIED (no keyring), 2 TAMPERED, 3 MALFORMED.
+    """
+    script = os.environ.get("NOA_VERIFY")
+    if not script:
+        pytest.skip("NOA_VERIFY is not set")
+    command = [sys.executable, script, str(receipts)]
+    if keyring is not None:
+        command.append(str(keyring))
+    result = subprocess.run(command, capture_output=True, text=True, timeout=60, check=False)
+    print(f"NOA_VERIFY: exit {result.returncode}\n{result.stdout}{result.stderr}")
+    return result.returncode, result.stdout
+
+
+def noa_keyring(tmp_path: Path, kid: str) -> Path:
+    """The noa keyring form: {kid: base64(DER SPKI)} of the agent public key."""
+    pem = export_module.public_key_pem(AGENT_SEED).decode("ascii")
+    der = "".join(line for line in pem.splitlines() if not line.startswith("-----"))
+    path = tmp_path / "keyring.json"
+    path.write_text(json.dumps({kid: der}))
+    return path
 
 
 # -- AERF --------------------------------------------------------------------
@@ -683,6 +709,37 @@ def test_noa_chain_prevhash_is_the_predecessor_receipt_hash(
     assert noa_verify(artifact, AGENT_PUBLIC) == []
 
 
+def test_noa_full_chain_passes_the_noa_reference_verifier(tmp_path, bundle, mapping):
+    linked = predecessor_pair(bundle)
+    first = build_noa(linked["predecessor"], mapping, AGENT_SEED).artifact
+    second = build_noa(linked, mapping, AGENT_SEED).artifact
+    receipts = tmp_path / "chain.json"
+    receipts.write_text(json.dumps([first, second]))
+    keyring = noa_keyring(tmp_path, first["sig"]["kid"])
+
+    code, output = run_noa_verifier(receipts, keyring)
+    assert code == 0, output
+    assert '"status": "VALID"' in output
+
+    tampered = copy.deepcopy(first)
+    tampered["action"]["riskClass"] = "LOW"
+    flipped = tmp_path / "tampered.json"
+    flipped.write_text(json.dumps([tampered]))
+    code, output = run_noa_verifier(flipped, keyring)
+    assert code == 2, output
+    assert '"status": "TAMPERED"' in output
+
+
+def test_noa_subset_is_malformed_under_the_noa_reference_verifier(tmp_path, bundle):
+    """The subset artifact omits four mandatory members, exactly as its label says."""
+    subset = build_noa(bundle, None, AGENT_SEED).artifact
+    receipts = tmp_path / "subset.json"
+    receipts.write_text(json.dumps([subset]))
+    code, output = run_noa_verifier(receipts, noa_keyring(tmp_path, subset["sig"]["kid"]))
+    assert code == 3, output
+    assert '"status": "MALFORMED"' in output
+
+
 def test_noa_without_predecessor_evidence_omits_prevhash(
     capsys, tmp_path, bundle, seed_file
 ):
@@ -772,6 +829,20 @@ def test_an_invalid_bundle_exits_one_and_writes_nothing(capsys, tmp_path, seed_f
     )
     assert code == 1, output
     assert "invalid" in output
+    assert not out.exists()
+
+
+def test_export_rejects_what_the_verifier_rejects(capsys, tmp_path, seed_file):
+    """A bundle text the strict parser refuses (duplicate keys) exits 1 and writes nothing."""
+    source = tmp_path / "evidence.json"
+    source.write_text('{"schema_version": 2, "schema_version": 2}')
+    out = tmp_path / "artifact.json"
+    code, output = run_cli(
+        capsys, "export", "--format", "aerf", str(source), "--out", str(out),
+        "--signing-key", str(seed_file),
+    )
+    assert code == 1, output
+    assert "duplicate" in output
     assert not out.exists()
 
 

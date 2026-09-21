@@ -1,0 +1,14 @@
+This receipt verifies cryptographic relationships between the
+included data, registered keys and service receipt.
+
+It does not independently prove:
+
+• that an external real-world action occurred;
+• that logged inputs or outputs were truthful;
+• that the agent host was uncompromised;
+• that the private key was never stolen;
+• that uninstrumented actions did not occur;
+• the legal identity of a human sponsor;
+• that the sponsor personally authorised this individual action;
+• legal liability;
+• regulatory compliance.

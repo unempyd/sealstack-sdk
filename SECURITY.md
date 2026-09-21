@@ -4,8 +4,8 @@
 
 Report vulnerabilities privately through either channel:
 
-- Email: SealStack@icloud.com
 - GitHub private vulnerability reporting: https://github.com/unempyd/sealstack-sdk/security/advisories/new
+- Email: `SealStack@icloud.com` (copy the address; it is shown as text, not a link)
 
 Do not open a public issue for a security problem. Include the affected
 component (SDK, reference server, verifier), a reproduction, and the impact
@@ -18,11 +18,11 @@ before any public disclosure.
   the offline verifier (`sealstack verify`) and the exporters (`sealstack export`).
   `sdk/product` is the pre-0.1.3 import name, kept as an alias of that package.
 - `reference-server/`: the single-tenant reference server. It exists so the
-  SDK can be exercised end to end without the hosted service; it is not the
-  hosted service and is not hardened for a reachable deployment.
+  SDK can be exercised end to end without any other server deployment; it is
+  an evaluation implementation and is not hardened for a reachable deployment.
 
-Reports about the hosted SealStack service are welcome through the same
-channels; that code is not in this repository.
+Reports about the SealStack service implementation whose code is not in this
+repository are welcome through the same channels.
 
 ## Trust assumptions
 

@@ -2,9 +2,9 @@
 
 It exists so that a user of this SDK can register an agent, upload signed
 events, receive counter-signed receipts and verify them offline with
-``sealstack verify`` without the hosted service.
+``sealstack verify`` without any other server deployment.
 
-It is not the hosted service and it is not a production server. One tenant,
+It is an evaluation server, not a production server. One tenant,
 one bearer key, SQLite storage, no dashboard, no OIDC, no sponsor or grant
 context, no agent-key rotation and no service-key rotation. Every
 cryptographic primitive comes from ``sealstack.signing``, so the receipt bytes
@@ -687,7 +687,7 @@ def create_app() -> FastAPI:
 
     application = FastAPI(
         title="SealStack reference server",
-        description="A minimal single-tenant reference implementation. Not the hosted service.",
+        description="A minimal single-tenant reference implementation. Not a production server.",
         lifespan=lifespan,
         docs_url=None,
         redoc_url=None,

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sealstack"
-version = "0.1.3"
+version = "0.1.4"
 description = "Cryptographically verifiable audit trails for AI agents: signed action records, hash-chained runtimes, server receipts, offline verification."
 readme = "README.md"
 license = "Apache-2.0"

@@ -1,11 +1,11 @@
 # Reference server
 
 A minimal implementation of the four SDK-facing endpoints, so that you can run
-the SDK end to end without the hosted service: register an agent, upload signed
+the SDK end to end without any other server deployment: register an agent, upload signed
 events, receive counter-signed receipts, and verify them offline with
 `sealstack verify`.
 
-**This is not the hosted service and it is not a production server.** It exists
+**This is an evaluation server, not a production server.** It exists
 to make the receipt format reproducible on your own machine. It has one tenant,
 one bearer key, SQLite storage, no dashboard, no OIDC, no user accounts, no
 sponsor or capability-grant context, no agent-key rotation and no service-key
@@ -58,7 +58,7 @@ refused at start-up rather than signing with the wrong key.
 Every other path answers `404 {"error": "not_found"}`. All four require
 `Authorization: Bearer <SEALSTACK_REF_API_KEY>` and answer
 `401 {"error": "unauthorized"}` without it. Request and response shapes and
-error codes match the hosted API, so the unmodified SDK works against either.
+error codes match the full SealStack service implementation, so the unmodified SDK works against either.
 
 `POST /v1/agents/{agent_id}/keys`, the agent-key rotation endpoint, is not
 implemented here. Agent key rotation is disabled in the SDK in V1, so nothing
@@ -79,7 +79,7 @@ It does not implement: multi-tenancy, user accounts or sessions, sponsor and
 capability-grant context (every receipt carries the explicit nulls the format
 defines for their absence, and never an invented value), agent-key retirement
 or revocation, service-key rotation, rate limiting, or any of the concurrency
-guarantees that the hosted service gets from PostgreSQL row locks. This server
+guarantees that the full service implementation gets from PostgreSQL row locks. This server
 serialises its writes with one in-process lock and one SQLite transaction per
 event.
 

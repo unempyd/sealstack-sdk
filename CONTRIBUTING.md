@@ -11,5 +11,7 @@ reference-server` pass. This repository is an export of the SDK from the
 SealStack source repository, so a merged change is carried back there and
 re-exported rather than edited here in place.
 
-Security issues: do not open a public issue. Email SealStack@icloud.com or use
-GitHub private vulnerability reporting, as described in SECURITY.md.
+Security issues: do not open a public issue. Use
+[GitHub private vulnerability reporting](https://github.com/unempyd/sealstack-sdk/security/advisories/new)
+or write to `SealStack@icloud.com` (copy the address; it is not a link), as
+described in SECURITY.md.

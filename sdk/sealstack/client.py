@@ -33,11 +33,38 @@ from sealstack.queue import EventQueue, PendingEvent
 from sealstack.signing import canonicalize, now_timestamp, sha256_hash
 from sealstack.uploader import Uploader
 
-DEFAULT_BASE_URL = "https://api.sealstack.com"
 DEFAULT_QUEUE_WARNING_THRESHOLD = 10000
 DEFAULT_FAILURE_LOG_MAX_BYTES = 10 * 1024 * 1024
 FAILURE_MODES = (CONTINUE, RAISE)
+API_URL_ENV_VAR = "SEALSTACK_API_URL"
 STATE_DIR_ENV_VAR = "SEALSTACK_STATE_DIR"
+
+#: There is no built-in API base URL. The origin is always the deployment the
+#: customer chose, so an unconfigured client is a configuration mistake rather
+#: than a client that quietly sends an API key somewhere.
+_NO_BASE_URL = (
+    "sealstack: no API base URL is configured. Pass the base_url= argument to "
+    f"AuditClient(...), or set the {API_URL_ENV_VAR} environment variable, to the "
+    "origin you upload to. There is no built-in default and no hosted SealStack "
+    "service to fall back on: to run the whole loop on your own machine, start the "
+    "reference server bundled in the repository (reference-server/) and point at "
+    'it, for example base_url="http://127.0.0.1:8000".'
+)
+
+
+def _resolve_base_url(base_url: str | None) -> str:
+    """The base URL is the ``base_url`` argument, else ``SEALSTACK_API_URL``.
+
+    Neither set is a configuration mistake, reported the way an invalid
+    ``failure_mode`` is reported: a ``ValueError`` from the constructor. It is
+    not an audit failure, so it never reaches ``AuditFailure`` or the failure
+    log, and ``failure_mode="continue"`` never swallows it.
+    """
+    resolved = base_url if base_url else os.environ.get(API_URL_ENV_VAR)
+    if not resolved:
+        raise ValueError(_NO_BASE_URL)
+    return resolved
+
 
 _LIVE_CLIENTS: weakref.WeakSet[AuditClient] = weakref.WeakSet()
 
@@ -61,10 +88,12 @@ class AuditClient:
     ) -> None:
         if failure_mode not in FAILURE_MODES:
             raise ValueError(f"failure_mode must be one of {FAILURE_MODES}")
+        # Resolved before any directory is created, any lock is taken and any
+        # identity is written, so a refused construction leaves nothing behind.
+        self.base_url = _resolve_base_url(base_url)
         self.failure_mode = failure_mode
         self.agent_name = agent_name
         self.queue_warning_threshold = int(queue_warning_threshold)
-        self.base_url = (base_url or os.environ.get("SEALSTACK_API_URL") or DEFAULT_BASE_URL)
         env_state_dir = os.environ.get(STATE_DIR_ENV_VAR)
         self.state_dir = (
             Path(state_dir)

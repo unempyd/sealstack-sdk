@@ -34,7 +34,7 @@ from typing import Any, Final, NamedTuple, Protocol
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
-from sealstack.signing import SEED_LENGTH, canonicalize, public_key_from_seed
+from sealstack.signing import SEED_LENGTH, canonicalize, public_key_from_seed, strict_loads
 from sealstack.verify import validate_bundle_document
 
 __all__ = [
@@ -286,10 +286,13 @@ def export_timestamp(now: _datetime.datetime | None = None) -> str:
 def load_bundle(text: str) -> dict[str, Any]:
     """Parse and structurally validate an evidence bundle.
 
+    The text goes through the same strict parser as ``sealstack verify``
+    (duplicate keys, NaN/Infinity and out-of-range numbers are rejected), so
+    an exporter never re-signs a document the verifier would refuse to read.
     Raises ``ValueError`` when the document is not a valid bundle; the CLI
     turns that into exit 1 without writing anything.
     """
-    document = json.loads(text)
+    document = strict_loads(text)
     validate_bundle_document(document)
     bundle: dict[str, Any] = document
     return bundle
