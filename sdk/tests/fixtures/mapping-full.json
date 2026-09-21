@@ -1,0 +1,33 @@
+{
+  "aerf": {
+    "plan_id_source": "action_id",
+    "actions": {
+      "invoice.create": {
+        "in_policy": true,
+        "policy_reason": "matched capability invoice.create",
+        "action": "invoice.create"
+      }
+    }
+  },
+  "agent_receipts": {
+    "actions": {
+      "invoice.create": {
+        "type": "financial.payment.initiate",
+        "risk_level": "high"
+      }
+    }
+  },
+  "noa": {
+    "agent": {
+      "principal": "SERVICE",
+      "sandboxed": false
+    },
+    "actions": {
+      "invoice.create": {
+        "riskClass": "HIGH",
+        "reversible": false,
+        "canonical": "invoice.create"
+      }
+    }
+  }
+}

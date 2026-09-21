@@ -1,0 +1,90 @@
+{
+  "canonical_event_utf8": "{\"action_id\":\"00000000-0000-4000-8000-000000000006\",\"action_name\":\"invoice.create\",\"agent_id\":\"00000000-0000-4000-8000-000000000003\",\"agent_key_id\":\"00000000-0000-4000-8000-000000000004\",\"error_type\":null,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"event_type\":\"action.started\",\"input_digest\":{\"algorithm\":\"sha256\",\"status\":\"available\",\"value\":\"sha256:97fcdad9fe31227a9ec60e519ff7635ac71941c55b77e585c908db1fa6406030\"},\"metadata\":{\"source\":\"golden\"},\"occurred_at\":\"2026-01-02T03:04:05.000000Z\",\"organisation_id\":\"00000000-0000-4000-8000-000000000002\",\"output_digest\":null,\"previous_event_hash\":null,\"resource\":null,\"runtime_id\":\"00000000-0000-4000-8000-000000000005\",\"schema_version\":1,\"sequence\":1}",
+  "canonical_receipt_utf8": "{\"agent_id\":\"00000000-0000-4000-8000-000000000003\",\"agent_key_fingerprint\":\"sha256:56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c\",\"agent_key_id\":\"00000000-0000-4000-8000-000000000004\",\"agent_sponsor_id\":\"00000000-0000-4000-8000-000000000007\",\"capabilities_snapshot\":[\"invoice.create\",\"invoice.read\"],\"event_hash\":\"sha256:210dac98941ac0bbc38eab7f6dd8bbb5fd5cca6bf8da03a1c05892ef0e34a233\",\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"grant\":{\"agent_id\":\"00000000-0000-4000-8000-000000000003\",\"capabilities\":[\"invoice.create\",\"invoice.read\"],\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"created_by_user_id\":\"00000000-0000-4000-8000-000000000008\",\"id\":\"00000000-0000-4000-8000-000000000009\",\"organisation_id\":\"00000000-0000-4000-8000-000000000002\",\"sponsor_id\":\"00000000-0000-4000-8000-000000000007\",\"valid_from\":\"2026-01-01T00:00:00.000000Z\",\"valid_until\":null},\"grant_id\":\"00000000-0000-4000-8000-000000000009\",\"organisation_id\":\"00000000-0000-4000-8000-000000000002\",\"received_at\":\"2026-01-02T03:04:05.000000Z\",\"schema_version\":2,\"service_key_id\":\"service-golden-v1\",\"sponsor\":{\"agent_id\":\"00000000-0000-4000-8000-000000000003\",\"created_by_user_id\":\"00000000-0000-4000-8000-000000000008\",\"id\":\"00000000-0000-4000-8000-000000000007\",\"organisation_id\":\"00000000-0000-4000-8000-000000000002\",\"user_id\":\"00000000-0000-4000-8000-000000000008\",\"valid_from\":\"2026-01-01T00:00:00.000000Z\",\"valid_until\":null},\"sponsor_user_id_snapshot\":\"00000000-0000-4000-8000-000000000008\"}",
+  "bundle": {
+    "schema_version": 2,
+    "event_envelope": {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "organisation_id": "00000000-0000-4000-8000-000000000002",
+        "agent_id": "00000000-0000-4000-8000-000000000003",
+        "agent_key_id": "00000000-0000-4000-8000-000000000004",
+        "runtime_id": "00000000-0000-4000-8000-000000000005",
+        "sequence": 1,
+        "previous_event_hash": null,
+        "event_type": "action.started",
+        "action_id": "00000000-0000-4000-8000-000000000006",
+        "action_name": "invoice.create",
+        "occurred_at": "2026-01-02T03:04:05.000000Z",
+        "resource": null,
+        "input_digest": {
+          "algorithm": "sha256",
+          "value": "sha256:97fcdad9fe31227a9ec60e519ff7635ac71941c55b77e585c908db1fa6406030",
+          "status": "available"
+        },
+        "output_digest": null,
+        "error_type": null,
+        "metadata": {
+          "source": "golden"
+        }
+      },
+      "event_hash": "sha256:210dac98941ac0bbc38eab7f6dd8bbb5fd5cca6bf8da03a1c05892ef0e34a233",
+      "signature": "m_ifXERnt9MnkduS1RKVBxTtXX4EcqfremBkeDipPqHzYu0vjRE3nDQ1rEvVuO8yTFhTJcCwbPxXN0q9qrjqAw"
+    },
+    "agent_public_key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg",
+    "service_receipt": {
+      "body": {
+        "schema_version": 2,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "event_hash": "sha256:210dac98941ac0bbc38eab7f6dd8bbb5fd5cca6bf8da03a1c05892ef0e34a233",
+        "organisation_id": "00000000-0000-4000-8000-000000000002",
+        "agent_id": "00000000-0000-4000-8000-000000000003",
+        "agent_key_id": "00000000-0000-4000-8000-000000000004",
+        "agent_key_fingerprint": "sha256:56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c",
+        "agent_sponsor_id": "00000000-0000-4000-8000-000000000007",
+        "sponsor_user_id_snapshot": "00000000-0000-4000-8000-000000000008",
+        "grant_id": "00000000-0000-4000-8000-000000000009",
+        "capabilities_snapshot": [
+          "invoice.create",
+          "invoice.read"
+        ],
+        "received_at": "2026-01-02T03:04:05.000000Z",
+        "service_key_id": "service-golden-v1",
+        "sponsor": {
+          "id": "00000000-0000-4000-8000-000000000007",
+          "organisation_id": "00000000-0000-4000-8000-000000000002",
+          "agent_id": "00000000-0000-4000-8000-000000000003",
+          "user_id": "00000000-0000-4000-8000-000000000008",
+          "valid_from": "2026-01-01T00:00:00.000000Z",
+          "valid_until": null,
+          "created_by_user_id": "00000000-0000-4000-8000-000000000008"
+        },
+        "grant": {
+          "id": "00000000-0000-4000-8000-000000000009",
+          "organisation_id": "00000000-0000-4000-8000-000000000002",
+          "agent_id": "00000000-0000-4000-8000-000000000003",
+          "sponsor_id": "00000000-0000-4000-8000-000000000007",
+          "capabilities": [
+            "invoice.create",
+            "invoice.read"
+          ],
+          "valid_from": "2026-01-01T00:00:00.000000Z",
+          "valid_until": null,
+          "created_at": "2026-01-01T00:00:00.000000Z",
+          "created_by_user_id": "00000000-0000-4000-8000-000000000008"
+        }
+      },
+      "signature": "vthOyW4G1c_sqIzM9V8TJ8UkflctDrDXfKM8x7BDyq3Hq9BXVJm9dpk50mflSGt8I--fU_OI31HzHKaiP-wfBQ"
+    },
+    "service_public_key_metadata": {
+      "key_id": "service-golden-v1",
+      "algorithm": "Ed25519",
+      "public_key": "Kay64UG8yvCyLhqU000LxzYeUm0L_hLIl5S8kyKWbdc",
+      "valid_from": "2026-01-01T00:00:00.000000Z",
+      "valid_until": null
+    },
+    "limitations": "This receipt verifies cryptographic relationships between the\nincluded data, registered keys and service receipt.\n\nIt does not independently prove:\n\n• that an external real-world action occurred;\n• that logged inputs or outputs were truthful;\n• that the agent host was uncompromised;\n• that the private key was never stolen;\n• that uninstrumented actions did not occur;\n• the legal identity of a human sponsor;\n• that the sponsor personally authorised this individual action;\n• legal liability;\n• regulatory compliance.",
+    "predecessor": null
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "keys": [
+    {
+      "key_id": "service-golden-v1",
+      "algorithm": "Ed25519",
+      "public_key": "Kay64UG8yvCyLhqU000LxzYeUm0L_hLIl5S8kyKWbdc",
+      "valid_from": "2026-01-01T00:00:00.000000Z",
+      "valid_until": null
+    }
+  ]
+}

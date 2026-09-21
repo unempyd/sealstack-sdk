@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+sealstack-ref.sqlite
+sealstack-ref.sqlite-shm
+sealstack-ref.sqlite-wal
+sealstack-ref-service.seed
+.DS_Store

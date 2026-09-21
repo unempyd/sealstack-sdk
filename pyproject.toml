@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sealstack"
+version = "0.1.2"
+description = "Cryptographically verifiable audit trails for AI agents: signed action records, hash-chained runtimes, server receipts, offline verification."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "cryptography",
+    "rfc8785",
+    "httpx",
+]
+
+[project.optional-dependencies]
+reference-server = [
+    "fastapi",
+    "uvicorn",
+]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+]
+
+[project.scripts]
+product = "product.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sdk/product"]
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "sdk/product",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "COMPATIBILITY.md",
+    "DEVIATIONS.md",
+    "SECURITY.md",
+    "SPEC-RECEIPT.md",
+]
+exclude = ["**/__pycache__", ".gitignore"]
+
+[tool.pytest.ini_options]
+pythonpath = ["sdk", "sdk/tests"]
+testpaths = ["sdk/tests", "reference-server/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["sdk", "reference-server"]
+
+[tool.ruff.lint.per-file-ignores]
+# sdk/tests/ is copied from the SealStack source repository by its
+# scripts/export-sdk.sh. Those files are reproduced as they are there, so
+# their import order and constructor style are not adjusted for this tree.
+"sdk/tests/*" = ["C408", "I001"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = ["sdk", "reference-server"]
