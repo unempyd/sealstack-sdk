@@ -4,7 +4,7 @@
 
 Report vulnerabilities privately through either channel:
 
-- Email: revenueos@icloud.com
+- Email: SealStack@icloud.com
 - GitHub private vulnerability reporting: https://github.com/unempyd/sealstack-sdk/security/advisories/new
 
 Do not open a public issue for a security problem. Include the affected
