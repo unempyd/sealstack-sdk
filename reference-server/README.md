@@ -3,7 +3,7 @@
 A minimal implementation of the four SDK-facing endpoints, so that you can run
 the SDK end to end without the hosted service: register an agent, upload signed
 events, receive counter-signed receipts, and verify them offline with
-`product verify`.
+`sealstack verify`.
 
 **This is not the hosted service and it is not a production server.** It exists
 to make the receipt format reproducible on your own machine. It has one tenant,
@@ -15,8 +15,13 @@ on the same machine as the agent.
 
 ## Running it
 
+The reference server is not part of the PyPI package: `pip install sealstack`
+does not install it. Clone this repository and run it from the checkout.
+
 ```sh
-pip install "sealstack[reference-server]"
+git clone https://github.com/unempyd/sealstack-sdk
+cd sealstack-sdk
+pip install -e ".[reference-server]"
 SEALSTACK_REF_API_KEY=pick-a-long-random-string \
     uvicorn server:app --app-dir reference-server --host 127.0.0.1 --port 8000
 ```
@@ -84,10 +89,10 @@ The SDK stores each receipt next to its event in the local durable queue
 (`<state_dir>/audit_queue.db`, column `server_receipt`). An evidence bundle is
 that event envelope, the agent public key from `<state_dir>/identity.json`, the
 receipt, the matching entry from `/v1/verification-keys`, the limitations text
-from `product.verify.LIMITATIONS`, and optionally the predecessor event's
+from `sealstack.verify.LIMITATIONS`, and optionally the predecessor event's
 bundle. `tests/test_reference_server.py` assembles one exactly that way and
 verifies it. Save `/v1/verification-keys` as your trust file and pass it to
-`product verify --trusted-service-keys`.
+`sealstack verify --trusted-service-keys`.
 
 ## Tests
 
@@ -96,5 +101,5 @@ pytest -q reference-server/tests
 ```
 
 The test starts this server on a free port, drives it with a real
-`AuditClient`, and asserts that `product verify` exits 0 on the resulting
+`AuditClient`, and asserts that `sealstack verify` exits 0 on the resulting
 bundle and 1 after one field is changed.

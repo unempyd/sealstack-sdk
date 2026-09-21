@@ -2,12 +2,12 @@
 
 It exists so that a user of this SDK can register an agent, upload signed
 events, receive counter-signed receipts and verify them offline with
-``product verify`` without the hosted service.
+``sealstack verify`` without the hosted service.
 
 It is not the hosted service and it is not a production server. One tenant,
 one bearer key, SQLite storage, no dashboard, no OIDC, no sponsor or grant
 context, no agent-key rotation and no service-key rotation. Every
-cryptographic primitive comes from ``product.signing``, so the receipt bytes
+cryptographic primitive comes from ``sealstack.signing``, so the receipt bytes
 are produced by the same code the offline verifier checks.
 
 Run it with::
@@ -34,7 +34,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from product.signing import (
+from sealstack.signing import (
     MAX_SAFE,
     PUBLIC_KEY_LENGTH,
     SEED_LENGTH,

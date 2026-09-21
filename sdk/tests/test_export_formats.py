@@ -38,9 +38,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "sdk"))
 sys.path.insert(0, str(ROOT))
 
-from product import export as export_module
-from product.cli import main
-from product.export import (
+from sealstack import export as export_module
+from sealstack.cli import main
+from sealstack.export import (
     NOA_MESSAGE_PREFIX,
     ExportError,
     build_aerf,
@@ -48,7 +48,7 @@ from product.export import (
     build_noa,
     load_mapping,
 )
-from product.signing import public_key_from_seed
+from sealstack.signing import public_key_from_seed
 
 from _fixture_source import AGENT_SEED, uid
 from _support import rebind
@@ -847,7 +847,7 @@ def test_state_dir_signs_with_the_registered_identity(capsys, tmp_path, bundle):
 
 
 def test_state_dir_owned_by_another_sdk_is_refused(capsys, tmp_path, bundle):
-    from product.identity import DirectoryLock
+    from sealstack.identity import DirectoryLock
 
     state_dir = tmp_path / "state"
     state_dir.mkdir()

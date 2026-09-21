@@ -6,7 +6,7 @@ that reproduces a verifier result is the most useful attachment.
 
 Pull requests are welcome. Keep a change to one concern, add or adjust a test
 under `sdk/tests` or `reference-server/tests`, and make sure `pytest`, `ruff
-check .` and `mypy --strict --explicit-package-bases sdk/product
+check .` and `mypy --strict --explicit-package-bases sdk/sealstack
 reference-server` pass. This repository is an export of the SDK from the
 SealStack source repository, so a merged change is carried back there and
 re-exported rather than edited here in place.

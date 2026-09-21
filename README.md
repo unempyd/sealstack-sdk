@@ -30,7 +30,7 @@ record-keeping obligations. Receipts also export to AERF, to the Agent Receipt
 Protocol and to the noa SCITT agent receipt profile.
 
 Read this caveat before anything else: agent key rotation is disabled in V1,
-`product rotate-key` exits 2 with a message pointing at v0.2, and there is no
+`sealstack rotate-key` exits 2 with a message pointing at v0.2, and there is no
 dashboard rotation action.
 
 ## Install
@@ -39,8 +39,12 @@ dashboard rotation action.
 pip install sealstack
 ```
 
-The package is published to PyPI with the v0.1.2 release, and that line becomes
+The package is published to PyPI with the v0.1.3 release, and that line becomes
 valid at release; until then, run `pip install .` from a checkout.
+
+Before 0.1.3 the package imported as `product`; that name still works as an
+alias, so `from product import AuditClient` and the `product` command keep
+working. New code should use `sealstack`.
 
 ## Quickstart
 
@@ -56,7 +60,7 @@ export AUDIT_API_KEY=pick-a-long-random-string
 
 ```python
 import os
-from product.client import AuditClient
+from sealstack.client import AuditClient
 
 audit = AuditClient(api_key=os.environ["AUDIT_API_KEY"], agent_name="billing-agent")
 
@@ -132,7 +136,7 @@ Offline verification of an exported receipt, captured from a terminal after
 the server had been stopped:
 
 ```text
-$ product verify receipt.json --trusted-service-keys keys.json
+$ sealstack verify receipt.json --trusted-service-keys keys.json
 Event hash:              VALID
 Agent signature:         VALID
 Agent key fingerprint:   VALID
@@ -169,7 +173,7 @@ flowchart LR
   subgraph verifier["Verifier, offline"]
     direction TB
     trust["Trust file<br/>/v1/verification-keys,<br/>fetched out of band"]
-    check["product verify<br/>makes no network calls"]
+    check["sealstack verify<br/>makes no network calls"]
     trust --> check
   end
 
@@ -182,7 +186,7 @@ Two properties of that picture are worth stating plainly:
 - **The agent private key never crosses the boundary.** It is generated on the
   customer host, kept in `identity.json` at mode 0600 in the state directory,
   and only its public half is registered. The service never receives it, and
-  `product export` reads it on the customer machine too.
+  `sealstack export` reads it on the customer machine too.
 - **The service cannot forge an agent signature.** It holds only the agent's
   public key, so it can check a signature and it can counter-sign what it
   accepted, but it cannot produce a record that verifies as the agent's.
@@ -221,14 +225,14 @@ It does not independently prove:
 
 ## Interoperability
 
-`product export` rewrites one evidence bundle into an external receipt format,
+`sealstack export` rewrites one evidence bundle into an external receipt format,
 signing the result with the agent key on your machine. The server never sees
 that key and takes no part in the export.
 
 ```sh
-product export --format aerf receipt.json --state-dir ~/.sealstack/billing-agent
-product export --format agent-receipts receipt.json --state-dir ~/.sealstack/billing-agent
-product export --format scitt receipt.json --state-dir ~/.sealstack/billing-agent
+sealstack export --format aerf receipt.json --state-dir ~/.sealstack/billing-agent
+sealstack export --format agent-receipts receipt.json --state-dir ~/.sealstack/billing-agent
+sealstack export --format scitt receipt.json --state-dir ~/.sealstack/billing-agent
 ```
 
 | Format | Target version | Modes | Signing location | External verification | Known limitation |
@@ -249,7 +253,7 @@ operator's mapping being truthful, because SealStack does not evaluate policy,
 classify actions or assess risk; the AERF and Agent Receipts production
 profiles expect RFC 3161 trusted timestamps and none is produced; and chain
 fields are set only when predecessor evidence is in the bundle. SealStack does
-not consume any of these formats, and `product verify` reads only the native
+not consume any of these formats, and `sealstack verify` reads only the native
 bundle.
 
 [COMPATIBILITY.md](COMPATIBILITY.md) states the exact version of each target
@@ -263,7 +267,7 @@ save it as a local trust file, and pass it explicitly. The verifier makes no
 network calls and never reads trust from the bundle it is checking.
 
 ```sh
-product verify receipt.json --trusted-service-keys service-keys.json
+sealstack verify receipt.json --trusted-service-keys service-keys.json
 ```
 
 Exit codes:
@@ -287,7 +291,7 @@ flipped service_receipt.signature[0]: 's' -> 't'
 ```
 
 ```text
-$ product verify receipt.json --trusted-service-keys keys.json
+$ sealstack verify receipt.json --trusted-service-keys keys.json
 Service receipt:         INVALID — bundle: service receipt signature does not verify
 Evidence bundle:         INVALID — bundle: service receipt signature does not verify
 $ echo $?
@@ -300,7 +304,7 @@ The full form of the quickstart, with a context manager beside the decorator:
 
 ```python
 import os
-from product.client import AuditClient
+from sealstack.client import AuditClient
 
 audit = AuditClient(api_key=os.environ["AUDIT_API_KEY"], agent_name="billing-agent")
 
@@ -341,8 +345,13 @@ argument, then environment variable, then default.
 whole loop on your own machine: register an agent, upload signed events, get
 counter-signed receipts and verify them offline.
 
+The reference server is not part of the PyPI package: `pip install sealstack`
+does not install it. Clone this repository and run it from the checkout.
+
 ```sh
-pip install "sealstack[reference-server]"
+git clone https://github.com/unempyd/sealstack-sdk
+cd sealstack-sdk
+pip install -e ".[reference-server]"
 SEALSTACK_REF_API_KEY=pick-a-long-random-string \
     uvicorn server:app --app-dir reference-server --host 127.0.0.1 --port 8000
 ```
@@ -357,7 +366,7 @@ states exactly what it checks and what it leaves out.
 
 ### Key rotation
 
-Agent key rotation is disabled in V1: `product rotate-key` always exits 2 and
+Agent key rotation is disabled in V1: `sealstack rotate-key` always exits 2 and
 prints a message pointing to v0.2. There is no dashboard rotation action.
 The server endpoint `POST /v1/agents/{agent_id}/keys` is retained as v0.2
 groundwork and remains covered by the acceptance tests.
@@ -378,7 +387,8 @@ This repository is an export of the SDK from the SealStack source repository; it
 
 | Path | Contents |
 | --- | --- |
-| `sdk/product/` | The SDK, the CLI and the offline verifier. |
+| `sdk/sealstack/` | The SDK, the CLI and the offline verifier. |
+| `sdk/product/` | The pre-0.1.3 import name, kept as an alias of `sdk/sealstack/`. |
 | `sdk/tests/` | Platform and export-format tests, with their fixtures. |
 | `reference-server/` | The minimal server described above, and its tests. |
 | `assets/` | The mark, the 60-second film, its poster and the dashboard captures used in this README. |
@@ -387,5 +397,5 @@ This repository is an export of the SDK from the SealStack source repository; it
 pip install -e ".[dev]"
 pytest -q
 ruff check .
-mypy --strict --explicit-package-bases sdk/product reference-server
+mypy --strict --explicit-package-bases sdk/sealstack reference-server
 ```

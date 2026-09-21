@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-from product.events import AuditFailure
+from sealstack.events import AuditFailure
 
 QUEUE_FILENAME: Final[str] = "audit_queue.db"
 TABLE: Final[str] = "audit_queue"

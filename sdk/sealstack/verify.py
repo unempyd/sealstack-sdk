@@ -1,7 +1,7 @@
 """Offline evidence-bundle verifier (SPEC §118, §121–§124).
 
 Pure and offline: this module performs no network access, reads no files and
-imports nothing from the product runtime except :mod:`product.signing`.  The
+imports nothing from the SealStack runtime except :mod:`sealstack.signing`.  The
 caller supplies the bundle and trust-file *text*; parsing happens here so that
 parse failures are classified with the same exit codes as everything else.
 """
@@ -12,7 +12,7 @@ import datetime as _datetime
 from dataclasses import dataclass, field
 from typing import Any, NoReturn
 
-from product.signing import (
+from sealstack.signing import (
     MAX_SAFE,
     PUBLIC_KEY_LENGTH,
     SIGNATURE_LENGTH,

@@ -1,4 +1,4 @@
-"""The reference server issues receipts that ``product verify`` accepts.
+"""The reference server issues receipts that ``sealstack verify`` accepts.
 
 The SDK is not modified or mocked anywhere here: a real ``AuditClient``
 registers against a real uvicorn process on a free port, signs two actions in
@@ -24,11 +24,11 @@ import pytest
 import uvicorn
 
 import server
-from product.cli import main
-from product.client import AuditClient
-from product.queue import QUEUE_FILENAME, TABLE
-from product.signing import SEED_LENGTH, b64url_decode, canonicalize, sha256_hash, sign
-from product.verify import LIMITATIONS
+from sealstack.cli import main
+from sealstack.client import AuditClient
+from sealstack.queue import QUEUE_FILENAME, TABLE
+from sealstack.signing import SEED_LENGTH, b64url_decode, canonicalize, sha256_hash, sign
+from sealstack.verify import LIMITATIONS
 
 API_KEY = "audit_live_reference_server_test_key"
 AUTH = {"Authorization": f"Bearer {API_KEY}"}

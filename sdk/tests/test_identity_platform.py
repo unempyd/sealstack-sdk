@@ -21,9 +21,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from product import identity
-from product.events import AuditFailure, new_uuid
-from product.signing import b64url_encode, fingerprint, generate_seed, public_key_from_seed
+from sealstack import identity
+from sealstack.events import AuditFailure, new_uuid
+from sealstack.signing import b64url_encode, fingerprint, generate_seed, public_key_from_seed
 
 POSIX_ONLY = pytest.mark.skipif(os.name != "posix", reason="POSIX-only contract")
 

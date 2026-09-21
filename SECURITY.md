@@ -14,8 +14,9 @@ before any public disclosure.
 
 ## Scope
 
-- `sdk/product`: the Python SDK, local identity file, SQLite queue, uploader,
-  the offline verifier (`product verify`) and the exporters (`product export`).
+- `sdk/sealstack`: the Python SDK, local identity file, SQLite queue, uploader,
+  the offline verifier (`sealstack verify`) and the exporters (`sealstack export`).
+  `sdk/product` is the pre-0.1.3 import name, kept as an alias of that package.
 - `reference-server/`: the single-tenant reference server. It exists so the
   SDK can be exercised end to end without the hosted service; it is not the
   hosted service and is not hardened for a reachable deployment.

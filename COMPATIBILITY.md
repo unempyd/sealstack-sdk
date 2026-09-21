@@ -1,7 +1,7 @@
 # Compatibility
 
 What SealStack emits, which external receipt formats it can produce, how each
-export is built, and what was verified. Facts only. Version 0.1.2.
+export is built, and what was verified. Facts only. Version 0.1.3.
 
 ## Native format
 
@@ -20,18 +20,18 @@ SealStack emits, per action event:
   public key, the service key metadata, the SPEC-RECEIPT.md Section 11 limitations text and,
   optionally, the predecessor event's bundle.
 
-The offline verifier (`product verify`) accepts only this bundle. Internal
+The offline verifier (`sealstack verify`) accepts only this bundle. Internal
 reference: SPEC-RECEIPT.md.
 
 ## External formats produced
 
 | Format | Exact version targeted | Command | Verification performed |
 | --- | --- | --- | --- |
-| AERF, Agent Evidence Receipt Format | v0.1.0-draft.1 (tag `v0.1.0-draft.1` of github.com/aerf-spec/aerf) | `product export --format aerf` | External: the AERF Go reference verifier built from the v0.1.0-draft.1 tag and from the repository main branch (v0.2.0-draft.1); full-mode artifact exits 0, a tampered copy exits 1. |
-| Agent Receipt Protocol | 0.5.0 (agentreceipts.ai, `@context` `https://agentreceipts.ai/context/v2`) | `product export --format agent-receipts` | External: the `obsigna` Python package (its build on this machine reports protocol 0.6.0 and context v3; its `verify_raw` and `verify_receipt` accepted the 0.5.0 artifact and rejected a tampered copy). Internal: RFC 8785 bytes without `proof`, Ed25519, previous-hash recomputation. |
-| noa profile, draft-noa-scitt-ai-agent-receipt-01 | `noa.receipt/0.1`, bare receipt form | `product export --format scitt` | Internal specification-derived test only (closed member set, enumerations, `chain.hash` recomputation, the 21-octet `NOA-Receipt-v0.1-sig:` prefix plus raw SHA-256 message, Ed25519, canonical base64). No external or reference verifier was run. |
+| AERF, Agent Evidence Receipt Format | v0.1.0-draft.1 (tag `v0.1.0-draft.1` of github.com/aerf-spec/aerf) | `sealstack export --format aerf` | External: the AERF Go reference verifier built from the v0.1.0-draft.1 tag and from the repository main branch (v0.2.0-draft.1); full-mode artifact exits 0, a tampered copy exits 1. |
+| Agent Receipt Protocol | 0.5.0 (agentreceipts.ai, `@context` `https://agentreceipts.ai/context/v2`) | `sealstack export --format agent-receipts` | External: the `obsigna` Python package (its build on this machine reports protocol 0.6.0 and context v3; its `verify_raw` and `verify_receipt` accepted the 0.5.0 artifact and rejected a tampered copy). Internal: RFC 8785 bytes without `proof`, Ed25519, previous-hash recomputation. |
+| noa profile, draft-noa-scitt-ai-agent-receipt-01 | `noa.receipt/0.1`, bare receipt form | `sealstack export --format scitt` | Internal specification-derived test only (closed member set, enumerations, `chain.hash` recomputation, the 21-octet `NOA-Receipt-v0.1-sig:` prefix plus raw SHA-256 message, Ed25519, canonical base64). No external or reference verifier was run. |
 
-SealStack does not consume any of these formats. `product verify` reads only
+SealStack does not consume any of these formats. `sealstack verify` reads only
 the native bundle.
 
 ## Signing location
@@ -179,3 +179,10 @@ do not provide beyond what their published specifications define.
 - The AERF and Agent Receipts production profiles expect RFC 3161 trusted
   timestamps; none is produced.
 - Chain fields are set only when predecessor evidence is in the bundle.
+
+## Package name change in 0.1.3
+
+From 0.1.3 the SDK imports as `sealstack` and the command is `sealstack`; `product`
+remains a working alias for both, resolving to the same module objects. The SDK's
+logger is named `sealstack` (it was `product` before 0.1.3); a logging
+configuration that named the old logger must be updated to see the records.

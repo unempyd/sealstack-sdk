@@ -16,7 +16,7 @@ from collections.abc import Callable
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-from product.events import (
+from sealstack.events import (
     ACTION_COMPLETED,
     ACTION_FAILED,
     ACTION_STARTED,
@@ -28,10 +28,10 @@ from product.events import (
     new_uuid,
     resource_field,
 )
-from product.signing import digest
+from sealstack.signing import digest
 
 if TYPE_CHECKING:  # pragma: no cover - import cycle guard
-    from product.client import AuditClient
+    from sealstack.client import AuditClient
 
 RAISE: str = "raise"
 CONTINUE: str = "continue"

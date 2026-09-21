@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Final
 from uuid import uuid4
 
-from product.signing import (
+from sealstack.signing import (
     UNSUPPORTED_DIGEST,
     canonicalize,
     digest,
@@ -161,7 +161,7 @@ def build_event(
     return event
 
 
-LOGGER: Final[logging.Logger] = logging.getLogger("product")
+LOGGER: Final[logging.Logger] = logging.getLogger("sealstack")
 
 
 def log_error(message: str, *args: Any) -> None:

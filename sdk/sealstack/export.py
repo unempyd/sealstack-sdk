@@ -34,8 +34,8 @@ from typing import Any, Final, NamedTuple, Protocol
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
-from product.signing import SEED_LENGTH, canonicalize, public_key_from_seed
-from product.verify import validate_bundle_document
+from sealstack.signing import SEED_LENGTH, canonicalize, public_key_from_seed
+from sealstack.verify import validate_bundle_document
 
 __all__ = [
     "AERF_VERSION",

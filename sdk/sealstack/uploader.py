@@ -18,12 +18,12 @@ from typing import TYPE_CHECKING, Any, Final
 
 import httpx
 
-from product.events import log_error, log_warning
-from product.queue import EventQueue
-from product.signing import b64url_decode, is_hash, now_timestamp
+from sealstack.events import log_error, log_warning
+from sealstack.queue import EventQueue
+from sealstack.signing import b64url_decode, is_hash, now_timestamp
 
 if TYPE_CHECKING:  # pragma: no cover - import cycle guard
-    from product.client import AuditClient
+    from sealstack.client import AuditClient
 
 ACCEPTED_STATUSES: Final[frozenset[str]] = frozenset({"accepted", "duplicate"})
 RETRYABLE_STATUSES: Final[frozenset[str]] = frozenset({"missing_previous"})

@@ -4,11 +4,40 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sealstack"
-version = "0.1.2"
+version = "0.1.3"
 description = "Cryptographically verifiable audit trails for AI agents: signed action records, hash-chained runtimes, server receipts, offline verification."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
+authors = [{name = "Brian Keeny", email = "SealStack@icloud.com"}]
+maintainers = [{name = "Brian Keeny", email = "SealStack@icloud.com"}]
+keywords = [
+    "ai-agents",
+    "audit-trail",
+    "audit-log",
+    "ed25519",
+    "tamper-evident",
+    "hash-chain",
+    "receipts",
+    "offline-verification",
+    "aerf",
+    "agent-receipts",
+    "scitt",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
 dependencies = [
     "cryptography",
     "rfc8785",
@@ -29,14 +58,25 @@ dev = [
     "httpx",
 ]
 
+[project.urls]
+Homepage = "https://github.com/unempyd/sealstack-sdk"
+Repository = "https://github.com/unempyd/sealstack-sdk"
+Issues = "https://github.com/unempyd/sealstack-sdk/issues"
+Changes = "https://github.com/unempyd/sealstack-sdk/releases"
+Security = "https://github.com/unempyd/sealstack-sdk/blob/main/SECURITY.md"
+Compatibility = "https://github.com/unempyd/sealstack-sdk/blob/main/COMPATIBILITY.md"
+
 [project.scripts]
-product = "product.cli:main"
+sealstack = "sealstack.cli:main"
+# ``product`` was the command before 0.1.3; it is kept as an alias.
+product = "sealstack.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["sdk/product"]
+packages = ["sdk/sealstack", "sdk/product"]
 
 [tool.hatch.build.targets.sdist]
 only-include = [
+    "sdk/sealstack",
     "sdk/product",
     "pyproject.toml",
     "README.md",

@@ -18,9 +18,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from product.decorator import CONTINUE, RAISE, ActionContext
-from product.decorator import track as _track
-from product.events import (
+from sealstack.decorator import CONTINUE, RAISE, ActionContext
+from sealstack.decorator import track as _track
+from sealstack.events import (
     AuditFailure,
     FailureLog,
     build_event,
@@ -28,10 +28,10 @@ from product.events import (
     log_warning,
     new_uuid,
 )
-from product.identity import DirectoryLock, Identity
-from product.queue import EventQueue, PendingEvent
-from product.signing import canonicalize, now_timestamp, sha256_hash
-from product.uploader import Uploader
+from sealstack.identity import DirectoryLock, Identity
+from sealstack.queue import EventQueue, PendingEvent
+from sealstack.signing import canonicalize, now_timestamp, sha256_hash
+from sealstack.uploader import Uploader
 
 DEFAULT_BASE_URL = "https://api.sealstack.com"
 DEFAULT_QUEUE_WARNING_THRESHOLD = 10000

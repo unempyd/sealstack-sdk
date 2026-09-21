@@ -20,8 +20,8 @@ from typing import Any, Final
 
 import httpx
 
-from product.events import AuditFailure, log_error, new_uuid
-from product.signing import (
+from sealstack.events import AuditFailure, log_error, new_uuid
+from sealstack.signing import (
     b64url_decode,
     b64url_encode,
     fingerprint,
