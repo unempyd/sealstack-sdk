@@ -30,6 +30,9 @@ See [What is verified, and what is not](#what-is-verified-and-what-is-not).
 
 ## Verify a receipt in 60 seconds
 
+![Terminal: sealstack verify prints five VALID lines and exits 0; after one character of the service signature is changed the same command prints INVALID and exits 1](https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/verify-tamper.gif)
+
+
 No server, no account. The receipt below is the format's published test vector
 ([SPEC-RECEIPT.md, Section 12](SPEC-RECEIPT.md#12-test-vector)); the trust
 file holds the public key of the service that counter-signed it.
