@@ -1,15 +1,19 @@
-<img src="https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/logo.svg" alt="SealStack" width="84" height="84">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/logo.svg" alt="SealStack" width="96">
+</p>
 
-# SealStack
+<h1 align="center">SealStack</h1>
 
-**Signed, hash-chained action records for AI agents, with a server receipt for every record and a verifier that runs offline.**
+<p align="center"><strong>Signed, hash-chained action records for AI agents, with a server receipt for every record and a verifier that runs offline.</strong></p>
 
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-111111.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-111111.svg)](pyproject.toml)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-111111.svg" alt="License: Apache 2.0"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-111111.svg" alt="Python 3.11+"></a>
+</p>
 
-[![SealStack in 60 seconds: the mark over the words SEALSTACK and the line Signed evidence for AI agents](https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/video-poster.webp)](https://github.com/unempyd/sealstack-sdk/blob/main/assets/sealstack-60s.mp4)
+[![SealStack in 60 seconds: the mark over the words SEALSTACK and the line Signed evidence for AI agents](https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/video-poster.webp)](https://github.com/unempyd/sealstack-sdk/raw/main/assets/sealstack-60s.mp4)
 
-[Watch the 60-second demonstration](https://github.com/unempyd/sealstack-sdk/blob/main/assets/sealstack-60s.mp4) (silent, 1920x1080, 2.8 MB, plays on its GitHub file page).
+[Download the 60-second demonstration](https://github.com/unempyd/sealstack-sdk/raw/main/assets/sealstack-60s.mp4) (MP4, silent, 1920x1080, 2.8 MB).
 
 Agent action → signed event → hash chain → SealStack service receipt → offline verification → optional AERF / Agent Receipts / noa export
 
@@ -98,7 +102,7 @@ the exported bundle and a list of service verification keys, and nothing else.
 ## See it working
 
 The 60-second film above is the fastest version:
-[watch it](https://github.com/unempyd/sealstack-sdk/blob/main/assets/sealstack-60s.mp4). Then three real captures.
+[download it](https://github.com/unempyd/sealstack-sdk/raw/main/assets/sealstack-60s.mp4). Then three real captures.
 
 ![The SealStack dashboard activity page, headed ACTIVITY with 10 events on this page, a filter form, JSON CSV and PRINTABLE export links, and a table of ten rows](https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/activity.webp)
 
