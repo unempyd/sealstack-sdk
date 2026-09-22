@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SealStack: signed, hash-chained action records for AI agents, verifiable offline</title>
+<meta name="description" content="Signed, hash-chained action records for AI agents, receipts counter-signed by the receiving service, an offline verifier (exit 0/1/2), exports to AERF, Agent Receipts and noa. Python SDK + receipt spec.">
+<link rel="canonical" href="https://unempyd.github.io/sealstack-sdk/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SealStack: signed, hash-chained action records for AI agents, verifiable offline">
+<meta property="og:description" content="Signed, hash-chained action records for AI agents, receipts counter-signed by the receiving service, an offline verifier (exit 0/1/2), exports to AERF, Agent Receipts and noa. Python SDK + receipt spec.">
+<meta property="og:url" content="https://unempyd.github.io/sealstack-sdk/">
+<meta property="og:image" content="https://unempyd.github.io/sealstack-sdk/social-preview-1280x640.png">
+<meta property="og:image:width" content="1280"><meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "SealStack SDK", "description": "Signed, hash-chained action records for AI agents, receipts counter-signed by the receiving service, an offline verifier (exit 0/1/2), exports to AERF, Agent Receipts and noa. Python SDK + receipt spec.", "codeRepository": "https://github.com/unempyd/sealstack-sdk", "programmingLanguage": "Python", "license": "https://www.apache.org/licenses/LICENSE-2.0", "runtimePlatform": "Python 3.11+", "url": "https://unempyd.github.io/sealstack-sdk/", "downloadUrl": "https://pypi.org/project/sealstack/", "keywords": ["signed action records", "AI agents", "offline verification", "Ed25519", "hash chain", "RFC 8785", "evidence bundle", "AERF", "Agent Receipt Protocol", "noa"]}</script>
+<style>
+:root{--fg:#111;--muted:#555;--bg:#fff;--code:#f4f4f4;--line:#e5e5e5}
+@media (prefers-color-scheme:dark){:root{--fg:#eee;--muted:#aaa;--bg:#111;--code:#1c1c1c;--line:#2a2a2a}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px}
+h1{font-size:2rem;margin:.2em 0} h2{margin-top:2em;border-top:1px solid var(--line);padding-top:1em}
+pre{background:var(--code);padding:12px;overflow:auto;border-radius:6px} code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+table{border-collapse:collapse;width:100%;display:block;overflow-x:auto} th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+img{max-width:100%;height:auto} .tag{color:var(--muted)} a{color:inherit}
+</style>
+</head>
+<body><main>
+<h1>SealStack</h1>
+<p class="tag"><strong>Signed, hash-chained action records for AI agents, counter-signed by the receiving service and verifiable offline. Not a log you have to trust: evidence you can check.</strong></p>
+<p><a href="https://github.com/unempyd/sealstack-sdk">Repository</a> · <a href="https://pypi.org/project/sealstack/">PyPI</a> · <a href="https://github.com/unempyd/sealstack-sdk/blob/main/SPEC-RECEIPT.md">Specification</a> · <a href="https://github.com/unempyd/sealstack-sdk/blob/main/COMPATIBILITY.md">Compatibility</a> · <a href="https://github.com/unempyd/sealstack-sdk/blob/main/SECURITY.md">Security</a></p>
+<p>SealStack is a Python SDK and a published receipt format. Every action an AI
+agent takes is written as a record that the agent signs with an Ed25519 key on
+its own host before the action runs. The records of one process run are
+hash-chained, so editing, reordering or deleting one is detectable from the
+records alone. The service that receives a record counter-signs it and returns
+a receipt. The record, the signatures and the receipt travel together as an
+evidence bundle that anyone can verify offline with a trust file, and that can
+be exported to three external receipt formats. The format is published so
+that others can implement it; it is not a standard.</p>
+<p>What it does not prove is stated inside every bundle, byte for byte: that the
+action really happened in the world, that inputs or outputs were truthful, that
+the host or key was uncompromised, or that anything was legally authorised.
+See <a href="#what-is-verified-and-what-is-not">What is verified, and what is not</a>.</p>
+<h2>Verify a receipt in 60 seconds</h2>
+<p>No server, no account. The receipt below is the format's published test vector
+(<a href="https://github.com/unempyd/sealstack-sdk/blob/main/SPEC-RECEIPT.md#12-test-vector">SPEC-RECEIPT.md, Section 12</a>); the trust
+file holds the public key of the service that counter-signed it.</p>
+<pre><code class="language-sh">pip install sealstack
+curl -sO https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/sdk/tests/fixtures/golden-evidence-bundle.json
+curl -sO https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/sdk/tests/fixtures/service-keys.json
+sealstack verify golden-evidence-bundle.json --trusted-service-keys service-keys.json
+</code></pre>
+<pre><code class="language-text">Event hash:              VALID
+Agent signature:         VALID
+Agent key fingerprint:   VALID
+Service receipt:         VALID
+Runtime chain:           NOT VERIFIED — predecessor absent
+</code></pre>
+<p>Exit code 0. Now change one character of the service signature and run the
+same command:</p>
+<pre><code class="language-sh">sed -i.orig 's/&quot;signature&quot;: &quot;vthO/&quot;signature&quot;: &quot;wthO/' golden-evidence-bundle.json
+sealstack verify golden-evidence-bundle.json --trusted-service-keys service-keys.json
+</code></pre>
+<pre><code class="language-text">Service receipt:         INVALID — bundle: service receipt signature does not verify
+Evidence bundle:         INVALID — bundle: service receipt signature does not verify
+</code></pre>
+<p>Exit code 1. Change the action name instead and the event hash line fails
+first. Leave out the trust file and the result is UNKNOWN with exit code 2:
+the verifier never infers trust from the bundle it is checking. The outputs
+above were captured from the released package, unedited.</p>
+<table>
+<thead>
+<tr>
+<th>Exit code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Cryptographically valid for the supplied evidence</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Incomplete or unverifiable</td>
+</tr>
+</tbody>
+</table>
+<h2>Install</h2>
+<pre><code class="language-sh">pip install sealstack
+</code></pre>
+<p>Python 3.11 or later. Dependencies: <code>cryptography</code>, <code>rfc8785</code>, <code>httpx</code>. The
+package is <a href="https://pypi.org/project/sealstack/">sealstack on PyPI</a>; the
+import namespace is <code>sealstack</code> (<code>product</code> remains an alias from 0.1.2).</p>
+<h2>What problem this solves</h2>
+<p>An application log is a record your own system writes and can change. Nothing
+inside the file shows whether a row was edited, reordered or removed after
+the fact, and a reader outside the system that produced it has no way to
+tell. SealStack records the same actions in a form that differs in three
+ways:</p>
+<ul>
+<li><strong>Signed before the fact.</strong> The agent signs the record with an Ed25519 key
+  held on its own host, before the action runs. Forging a record for a
+  registered agent means holding that private key.</li>
+<li><strong>Chained.</strong> Records of one runtime carry the previous record's hash and a
+  sequence number, so removing, reordering or editing one is detectable from
+  the records themselves.</li>
+<li><strong>Counter-signed.</strong> The receiving service signs what it accepted, with the
+  acceptance context it resolved at that moment. This is a counter-signature
+  by the receiving service, not an attestation by an independent third party.</li>
+</ul>
+<p>The result survives leaving the database it was stored in. The person
+checking it needs the exported bundle and a list of service verification
+keys, and nothing else.</p>
+<h2>How it works</h2>
+<pre class="mermaid">flowchart LR
+  subgraph customer["Your infrastructure"]
+    direction TB
+    agent["Agent process<br/>@audit.track / audit.action"]
+    key["identity.json, mode 0600<br/>Ed25519 private seed<br/>never leaves this host"]
+    sign["Sign the event<br/>RFC 8785 bytes, SHA-256, Ed25519<br/>previous_event_hash links the chain"]
+    queue["audit_queue.db<br/>local SQLite durable queue"]
+    agent --> sign
+    key --> sign
+    sign --> queue
+  end
+
+  subgraph service["Receiving service (the reference server)"]
+    direction TB
+    auth["API key, Bearer token"]
+    accept["Acceptance checks<br/>schema, canonical hash,<br/>agent signature, sequence,<br/>previous hash"]
+    receipt["Service receipt<br/>signed with the service key"]
+    auth --> accept
+    accept --> receipt
+  end
+
+  subgraph verifier["Verifier, offline"]
+    direction TB
+    trust["Trust file<br/>/v1/verification-keys,<br/>fetched out of band"]
+    check["sealstack verify<br/>makes no network calls"]
+    trust --> check
+  end
+
+  queue -->|"POST /v1/events/batch"| auth
+  receipt -->|"evidence bundle: event, signature,<br/>agent public key, receipt,<br/>service key metadata"| check
+</pre>
+<p>Two trust boundaries are worth stating plainly:</p>
+<pre class="mermaid">flowchart LR
+  subgraph host["Agent host"]
+    priv["Agent private key"]
+    ev["Signed event"]
+  end
+  subgraph svc["Receiving service"]
+    pub["Agent public key (registered)"]
+    skey["Service private key"]
+    rc["Receipt over event hash + key fingerprint + context"]
+  end
+  subgraph ver["Verifier"]
+    tf["Trust file (service public keys)"]
+  end
+  priv -. "never crosses" .-> svc
+  ev -->|"event + signature"| svc
+  pub --> rc
+  skey --> rc
+  rc -->|"bundle"| ver
+  tf --> ver
+  skey -. "never crosses" .-> host
+</pre>
+<ul>
+<li><strong>The agent private key never crosses the boundary.</strong> It is generated on the
+  customer host, kept in <code>identity.json</code> at mode 0600, and only its public
+  half is registered. The service can check a signature and counter-sign what
+  it accepted; it cannot produce a record that verifies as the agent's.</li>
+<li><strong>The agent cannot forge a service receipt.</strong> The verifier resolves the
+  service key only in the trust file it was given, never from the bundle it is
+  checking.</li>
+</ul>
+<p>Each record is a closed JSON object (17 fields), canonicalised with RFC 8785
+(JCS), hashed with SHA-256 and signed with Ed25519 over the canonical bytes.
+The receipt is a second closed object signed the same way by the service key.
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/SPEC-RECEIPT.md">SPEC-RECEIPT.md</a> defines every byte.</p>
+<h2>What is verified, and what is not</h2>
+<p><code>sealstack verify</code> proves three things about a record: that a registered agent
+key signed it before the action ran, that it sits where it claims inside its
+runtime chain, and that the service signed what it accepted. The exact
+13-step procedure, its statuses and exit codes are
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/SPEC-RECEIPT.md#103-verification-procedure">Section 10.3 of the specification</a>.</p>
+<p>What it does not prove is carried verbatim in every bundle; a bundle whose
+copy differs is rejected:</p>
+<pre><code class="language-text">This receipt verifies cryptographic relationships between the
+included data, registered keys and service receipt.
+
+It does not independently prove:
+
+• that an external real-world action occurred;
+• that logged inputs or outputs were truthful;
+• that the agent host was uncompromised;
+• that the private key was never stolen;
+• that uninstrumented actions did not occur;
+• the legal identity of a human sponsor;
+• that the sponsor personally authorised this individual action;
+• legal liability;
+• regulatory compliance.
+</code></pre>
+<p>Two further limits of this release: agent key rotation is disabled
+(<code>sealstack rotate-key</code> exits 2 and points at v0.2), and the receipt is a
+second-party counter-signature, not a third-party transparency-log receipt.
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/SECURITY.md">SECURITY.md</a> lists what V1 defends against and what it does not.</p>
+<h2>Interoperability</h2>
+<p><code>sealstack export</code> rewrites one evidence bundle into an external receipt format
+and signs the result with the agent key on your machine. Each export was
+checked against the format's own verifier on 2026-09-21 with the versions
+named below; <code>.github/workflows/test.yml</code> defines an <code>interop</code> job that
+rebuilds those verifiers from the same pinned versions.</p>
+<pre class="mermaid">flowchart LR
+  b["SealStack evidence bundle<br/>(native, sealstack verify)"]
+  b -->|"sealstack export --format aerf"| a["AERF v0.1.0-draft.1 receipt"]
+  b -->|"sealstack export --format agent-receipts"| r["Agent Receipt Protocol 0.5.0 credential"]
+  b -->|"sealstack export --format scitt"| n["noa.receipt/0.1 bare receipt"]
+  a --> av["aerf-verify (Go), tag and main"]
+  r --> rv["obsigna 0.16.0 verify_raw / verify_receipt / verify_chain"]
+  n --> nv["noa impl-py/noa_verify.py"]
+</pre>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Target version</th>
+<th>Upstream verifier result</th>
+<th>Known limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AERF, Agent Evidence Receipt Format</td>
+<td>v0.1.0-draft.1 (tag of github.com/aerf-spec/aerf)</td>
+<td>Go reference verifier from the tag and from main (v0.2.0-draft.1): full-mode artifact exits 0, tampered copy exits 1; full artifact validates against the upstream <code>aerf-v0.1.json</code> and <code>aerf-v0.2.json</code> schemas</td>
+<td>Non-ASCII <code>evidence</code> text canonicalises differently on the main branch; the golden fixture is ASCII and passes both. No RFC 3161 timestamp.</td>
+</tr>
+<tr>
+<td>Agent Receipt Protocol</td>
+<td>0.5.0 (agentreceipts.ai, <code>@context</code> v2)</td>
+<td><code>obsigna</code> 0.16.0: <code>verify_raw</code>, <code>verify_receipt</code> and a two-credential <code>verify_chain</code> accept; tampered copy rejected; its <code>hash_raw_receipt</code> equals SealStack's <code>previous_receipt_hash</code> byte for byte</td>
+<td>obsigna's own current receipt version is 0.6.0 / context v3. No extension slot: the native bundle travels beside the artifact as <code>&lt;artifact&gt;.sealstack.json</code>.</td>
+</tr>
+<tr>
+<td>noa profile, draft-noa-scitt-ai-agent-receipt-01</td>
+<td><code>noa.receipt/0.1</code>, bare receipt form</td>
+<td>The noa project's independent Python verifier (<code>impl-py/noa_verify.py</code>, github.com/NordenSoft/noa-mandate-core): VALID for one receipt and for a two-receipt chain, TAMPERED after one field change, MALFORMED for a subset artifact (the four labelled missing members), UNVERIFIED without a keyring; validates against the project's <code>noa-receipt-0.1</code> JSON schema</td>
+<td>Bare form only: no COSE_Sign1 envelope, no SCITT Signed Statement, no transparency registration.</td>
+</tr>
+</tbody>
+</table>
+<p>The default <code>subset</code> mode omits every field whose semantics SealStack does not
+record, writes no placeholder, and labels the artifact non-conformant with the
+exact list of missing fields; the upstream schemas and verifiers reject those
+artifacts on exactly those fields. Full mode takes an operator mapping file
+(example: <code>sdk/tests/fixtures/mapping-full.json</code>) and refuses to write
+anything when an action is missing from it. Full-mode conformance therefore
+depends on the operator's mapping being truthful: SealStack does not evaluate
+policy, classify actions or assess risk. SealStack does not consume any of
+these formats; <code>sealstack verify</code> reads only the native bundle.</p>
+<p><a href="https://github.com/unempyd/sealstack-sdk/blob/main/COMPATIBILITY.md">COMPATIBILITY.md</a> has every field mapping and the exact
+verifier versions.</p>
+<h2>Record your own actions</h2>
+<p>The SDK needs a receiving service. The reference server in this repository
+runs on your own machine; it is a checkout, not part of the wheel.</p>
+<pre><code class="language-sh">git clone https://github.com/unempyd/sealstack-sdk.git &amp;&amp; cd sealstack-sdk
+pip install -e &quot;.[reference-server]&quot;
+SEALSTACK_REF_API_KEY=pick-a-long-random-string \
+    uvicorn server:app --app-dir reference-server --host 127.0.0.1 --port 8000
+</code></pre>
+<p>In a second shell:</p>
+<pre><code class="language-sh">export SEALSTACK_API_URL=http://127.0.0.1:8000
+export AUDIT_API_KEY=pick-a-long-random-string
+</code></pre>
+<pre><code class="language-python">import os
+from sealstack.client import AuditClient
+
+audit = AuditClient(api_key=os.environ[&quot;AUDIT_API_KEY&quot;], agent_name=&quot;billing-agent&quot;)
+
+
+@audit.track(action=&quot;invoice.create&quot;, resource_type=&quot;invoice&quot;, resource_id=&quot;INV-2026-0042&quot;)
+def create_invoice(customer_id, amount_cents):
+    return {&quot;invoice_id&quot;: &quot;INV-2026-0042&quot;, &quot;total&quot;: amount_cents}
+
+
+create_invoice(&quot;cust-118&quot;, 24900)
+
+with audit.action(&quot;ledger.reconcile&quot;, resource_type=&quot;ledger&quot;, resource_id=&quot;2026-09&quot;):
+    pass  # your own reconciliation work goes here
+
+audit.close()
+</code></pre>
+<p>The first <code>AuditClient</code> generates an Ed25519 key pair on your host, registers
+the public half and keeps the private seed in the state directory.
+<code>@audit.track</code> writes an <code>action.started</code> record before your function runs
+and an <code>action.completed</code> or <code>action.failed</code> record after it returns; it
+decorates async functions too. <code>audit.action(...)</code> does the same for a block.
+The business function runs exactly once and always returns its own result or
+raises its own exception; an audit failure never changes a business outcome
+unless you ask for <code>failure_mode="raise"</code>.</p>
+<p>Receipts land in the local queue next to their events
+(<code>&lt;state_dir&gt;/audit_queue.db</code>, column <code>server_receipt</code>). Save the trust file
+and assemble a bundle as
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/reference-server/README.md#building-an-evidence-bundle">reference-server/README.md</a>
+describes (the reference-server test does exactly that assembly), then:</p>
+<pre><code class="language-sh">curl -s -H &quot;Authorization: Bearer $AUDIT_API_KEY&quot; $SEALSTACK_API_URL/v1/verification-keys &gt; service-keys.json
+sealstack verify &lt;bundle&gt;.json --trusted-service-keys service-keys.json
+</code></pre>
+<h3>SDK configuration</h3>
+<p><code>AuditClient</code> resolves two settings with the same precedence: constructor
+argument, then environment variable, then default.</p>
+<ul>
+<li>API base URL: <code>base_url</code> argument, then <code>SEALSTACK_API_URL</code>. There is no
+  default: the constructor raises <code>ValueError</code> when neither is set. There is
+  no hosted SealStack service; point the SDK at a server you run, such as
+  the reference server in this repository.</li>
+<li>State directory: <code>state_dir</code> argument, then <code>SEALSTACK_STATE_DIR</code>, then
+  <code>~/.sealstack/&lt;agent_name&gt;</code>.</li>
+</ul>
+<p>The reference server is not a production server: one tenant, one bearer key,
+SQLite storage, no dashboard, no sponsor or capability-grant context, no key
+rotation, and a signing key that sits on the same machine as the agent.
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/reference-server/README.md">reference-server/README.md</a> states exactly what
+it checks and what it leaves out.</p>
+<h2>Specification and conformance</h2>
+<ul>
+<li><a href="https://github.com/unempyd/sealstack-sdk/blob/main/SPEC-RECEIPT.md">SPEC-RECEIPT.md</a>: the receipt format, version 1. Records,
+  value profile, canonical encoding, hash chain, receipt (schema 2), evidence
+  bundle (schema 2), trust file, the verification procedure, the limitations
+  text, the golden test vector, and the ten places where the format still
+  assumes a registry or receipt issuer. It is implementable from that
+  document alone; it is not a submitted standard.</li>
+<li><code>sdk/tests/fixtures/receipt-v1.json</code> and <code>service-keys.json</code>: the golden
+  vector with its canonical bytes, derived independently of the SDK by
+  <code>sdk/tests/_fixture_source.py</code> (standard-library JSON plus <code>cryptography</code>).</li>
+<li><code>sdk/tests/fixtures/native-vectors.json</code>: conformance vectors for the
+  verifier, each a mutation of the golden bundle with the required exit code
+  and report line; re-signed cases use the public test seeds. Another
+  implementation can consume the file without running the Python tests.</li>
+<li><code>sdk/tests/fixtures/limitations.txt</code>: the Section 11 text as exact bytes.</li>
+<li><a href="https://github.com/unempyd/sealstack-sdk/blob/main/COMPATIBILITY.md">COMPATIBILITY.md</a>: field-by-field export mappings and
+  what was verified against which upstream verifier.</li>
+<li><a href="https://github.com/unempyd/sealstack-sdk/blob/main/DEVIATIONS.md">DEVIATIONS.md</a>: where this SDK differs from the
+  specification.</li>
+</ul>
+<p>If you implement the format in another language, the golden vector and the
+conformance vectors are the acceptance test. Report any sentence of the
+specification that admits two readings as an issue.</p>
+<h2>See it working</h2>
+<p>A 60-second silent film of the SDK, the dashboard application and the verifier:
+<a href="https://github.com/unempyd/sealstack-sdk/raw/main/assets/sealstack-60s.mp4">download the MP4</a>
+(1920x1080, 2.8 MB).</p>
+<p>The two captures below are from the SealStack dashboard application, which
+is not part of this repository. The reference server has no dashboard; its
+receipts verify exactly the same way.</p>
+<p><img alt="The SealStack dashboard activity page, headed ACTIVITY with 10 events on this page, a filter form, JSON CSV and PRINTABLE export links, and a table of ten rows" src="https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/activity.webp" /></p>
+<p><img alt="A SealStack event page headed EVENT with VERIFICATION STATUS VALID and a table of the event's fields, hash and signature" src="https://raw.githubusercontent.com/unempyd/sealstack-sdk/main/assets/event-detail.webp" /></p>
+<p>The event page states, directly under its VALID status: "This status describes
+cryptographic signature and hash validity only. It is not evidence that the
+external real-world action occurred, nor that logged inputs and outputs were
+truthful."</p>
+<h2>Questions a reviewer asks first</h2>
+<p><strong>Is this just logging with a signature?</strong> A signature alone proves who
+wrote a record. The chain proves order and completeness within a run, and the
+receipt proves the service accepted that exact record at that time. The
+verifier checks all three against a trust file it was given out of band, and
+refuses to read trust from the bundle.</p>
+<p><strong>What cryptography is used?</strong> RFC 8785 JSON canonicalisation, SHA-256, and
+Ed25519 (RFC 8032, pure, no prehash) over the canonical bytes. Keys are raw
+32-byte public keys, base64url without padding. No other algorithms are
+accepted.</p>
+<p><strong>What happens when evidence is modified?</strong> The event hash no longer matches
+(exit 1), or a signature no longer verifies (exit 1), or a chain link breaks
+(exit 1). A bundle the verifier cannot judge (unknown service key, missing
+trust file, unsupported receipt version) is UNKNOWN (exit 2), never VALID.</p>
+<p><strong>Can evidence be verified offline?</strong> Yes. <code>sealstack verify</code> performs no
+network access. It needs the bundle and a trust file.</p>
+<p><strong>Is SealStack a standard?</strong> No. The format is published so that another
+implementation can reproduce it, and it exports to three external formats
+whose own verifiers accept the exports. It has not been submitted anywhere.</p>
+<p><strong>Who signs the receipt?</strong> The service that received the record. That is a
+second party, not an independent third party or a transparency log.</p>
+<p><strong>Does it help with EU AI Act record-keeping?</strong> It produces automatic,
+tamper-evident records of agent actions, which is the kind of evidence such
+obligations ask for. SealStack does not assess or prove regulatory
+compliance; that sentence is inside every bundle.</p>
+<p><strong>How does another implementation conform?</strong> Reproduce the golden vector
+byte for byte, then pass every case in <code>native-vectors.json</code> with the same
+exit code.</p>
+<h2>Security</h2>
+<p>Report vulnerabilities privately: SealStack@icloud.com or
+<a href="https://github.com/unempyd/sealstack-sdk/security/advisories/new">GitHub private vulnerability reporting</a>.
+<a href="https://github.com/unempyd/sealstack-sdk/blob/main/SECURITY.md">SECURITY.md</a> states the trust assumptions and what this release
+does and does not defend against.</p>
+<h2>Contributing</h2>
+<p><a href="https://github.com/unempyd/sealstack-sdk/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> explains how to run the tests and how to
+propose a change. The contributions that carry the most weight are an
+independent verifier in another language written from the specification and
+the conformance vectors, reports of specification sentences that admit two
+readings, and upstream-verifier runs whose result differs from
+COMPATIBILITY.md. This repository is an export of the SDK from the SealStack
+source repository; merged changes are carried back there and re-exported.</p>
+<h2>Layout</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sdk/sealstack/</code></td>
+<td>The SDK, the CLI, the offline verifier and the exporters.</td>
+</tr>
+<tr>
+<td><code>sdk/product/</code></td>
+<td>The pre-0.1.3 import name, kept as an alias of <code>sdk/sealstack/</code>.</td>
+</tr>
+<tr>
+<td><code>sdk/tests/</code></td>
+<td>Native conformance vectors, export-format tests (with the upstream verifier harnesses), the <code>product</code> alias tests and platform tests, with their fixtures.</td>
+</tr>
+<tr>
+<td><code>reference-server/</code></td>
+<td>The minimal single-tenant server described above, and its end-to-end test.</td>
+</tr>
+<tr>
+<td><code>assets/</code></td>
+<td>The mark, the 60-second film, its poster and the dashboard captures.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sh">pip install -e &quot;.[dev]&quot;
+pytest -q
+ruff check .
+mypy --strict --explicit-package-bases sdk/sealstack reference-server
+</code></pre>
+<p>Apache-2.0. See <a href="https://github.com/unempyd/sealstack-sdk/blob/main/LICENSE">LICENSE</a>.</p>
+<p class="tag">This page is generated from the repository README; the repository is the primary source.</p>
+</main>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
+</body></html>
